@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>你的“吸金体质”深度检测报告</title>
+    <title>财富基因·六维深度罗盘</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #6200ea; /* 深紫色主调，显贵气 */
-            --primary-light: #b388ff;
-            --bg: #f3f4f6;
+            --primary: #5b21b6; /* 深邃紫 */
+            --primary-light: #8b5cf6;
+            --accent: #f59e0b; /* 金色点缀 */
+            --bg: #f8fafc;
             --card: #ffffff;
-            --text-main: #1f2937;
-            --text-sub: #4b5563;
-            --success: #059669; /* 绿色-优势 */
-            --warning: #d97706; /* 橙色-常态 */
-            --danger: #dc2626;  /* 红色-短板 */
+            --text-main: #1e293b;
+            --text-sub: #64748b;
         }
 
         body {
@@ -31,547 +29,465 @@
 
         .container {
             width: 100%;
-            max-width: 480px; /* 手机端最佳宽度 */
+            max-width: 500px;
             background: var(--card);
             border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 40px rgba(91, 33, 182, 0.08);
             overflow: hidden;
             padding: 25px;
             position: relative;
         }
 
-        /* --- 答题页样式 --- */
-        .header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .header h1 {
-            font-size: 22px;
-            color: var(--primary);
-            margin: 0 0 8px 0;
-        }
-        .header p {
-            font-size: 13px;
-            color: var(--text-sub);
-            margin: 0;
-        }
-
+        /* 顶部进度条 */
         .progress-box {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 30px;
         }
         .progress-bar {
             flex: 1;
-            height: 6px;
-            background-color: #eee;
+            height: 8px;
+            background-color: #e2e8f0;
             border-radius: 10px;
             overflow: hidden;
         }
         .progress-fill {
             height: 100%;
-            background-color: var(--primary);
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.4s ease;
         }
-        .progress-num {
-            font-size: 12px;
+        .progress-text {
+            font-size: 13px;
             color: var(--text-sub);
-            font-weight: bold;
-        }
-
-        .question-card {
-            min-height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-size: 18px;
             font-weight: 600;
-            line-height: 1.5;
-            margin-bottom: 30px;
-            animation: fadeIn 0.4s ease;
         }
 
-        .options {
+        /* 题目卡片 */
+        .question-area {
+            min-height: 140px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            justify-content: center;
+            margin-bottom: 25px;
+            animation: fadeIn 0.4s ease;
         }
-        .option-btn {
+        .q-tag {
+            display: inline-block;
+            background: #f3e8ff;
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            width: fit-content;
+        }
+        .q-text {
+            font-size: 19px;
+            font-weight: 700;
+            line-height: 1.5;
+            color: var(--text-main);
+        }
+
+        /* 选项按钮 */
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .btn-opt {
             background: #fff;
-            border: 1.5px solid #e5e7eb;
-            padding: 16px;
+            border: 2px solid #f1f5f9;
+            padding: 18px;
             border-radius: 16px;
             font-size: 16px;
+            color: var(--text-main);
+            text-align: left;
             cursor: pointer;
             transition: all 0.2s;
-            color: var(--text-main);
             font-weight: 500;
-            text-align: left; /* 选项左对齐看起来更正式 */
-            padding-left: 20px;
+            position: relative;
+            overflow: hidden;
         }
-        .option-btn:hover, .option-btn:active {
-            border-color: var(--primary);
-            background-color: #f5f3ff;
+        .btn-opt:hover {
+            border-color: var(--primary-light);
+            background: #fcfaff;
             color: var(--primary);
-            transform: translateY(-1px);
         }
+        .btn-opt:active { transform: scale(0.98); }
 
-        /* --- 结果页样式 --- */
-        #result-page {
-            display: none;
-            animation: slideUp 0.6s ease;
-        }
-
-        .result-badge {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .badge-text {
-            background: var(--primary);
+        /* === 结果页 === */
+        #result-page { display: none; animation: slideUp 0.6s ease; }
+        
+        .result-header { text-align: center; margin-bottom: 20px; }
+        .user-tag {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
-            padding: 6px 16px;
-            border-radius: 50px;
+            padding: 6px 18px;
+            border-radius: 30px;
             font-size: 12px;
+            font-weight: bold;
             letter-spacing: 1px;
             text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(91, 33, 182, 0.3);
         }
-        
-        .result-title-box {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .result-archetype {
+        .archetype-title {
             font-size: 32px;
             font-weight: 800;
-            color: var(--primary);
-            margin: 10px 0;
-            text-shadow: 0 2px 10px rgba(98, 0, 234, 0.15);
+            margin: 15px 0 5px 0;
+            background: -webkit-linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .result-score {
-            font-size: 14px;
-            color: var(--text-sub);
+        .score-total { font-size: 14px; color: var(--text-sub); }
+
+        /* 雷达图背景 */
+        .chart-box {
+            position: relative;
+            height: 300px;
+            margin: 10px 0 30px 0;
         }
 
-        /* 雷达图容器 */
-        .chart-wrapper {
-            position: relative;
-            height: 280px;
-            width: 100%;
-            margin-bottom: 30px;
+        /* 模块标题 */
+        .mod-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin: 35px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mod-title::before {
+            content: '';
+            width: 5px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 20px;
         }
 
         /* 深度分析卡片 */
-        .analysis-section {
-            border-top: 1px solid #eee;
-            padding-top: 25px;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        .section-title::before {
-            content: '';
-            display: block;
-            width: 4px;
-            height: 18px;
-            background: var(--primary);
-            margin-right: 10px;
-            border-radius: 2px;
-        }
-
-        .dimension-card {
+        .analysis-card {
             background: #f9fafb;
-            border-radius: 12px;
-            padding: 15px;
+            border: 1px solid #f3f4f6;
+            border-radius: 16px;
+            padding: 20px;
             margin-bottom: 15px;
         }
-        .dim-header {
+        .card-head {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .dim-name {
+            margin-bottom: 10px;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 16px;
         }
-        .dim-tag {
-            font-size: 12px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
+        .card-body { font-size: 14px; line-height: 1.6; color: #475569; text-align: justify; }
+
+        /* 推荐副业/职业 */
+        .career-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .dim-text {
-            font-size: 14px;
-            line-height: 1.6;
-            color: #555;
-            text-align: justify;
+        .career-tag {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #ffedd5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
         }
 
-        /* 底部弱点警示 */
-        .weakness-box {
-            background: #fef2f2;
-            border: 1px solid #fee2e2;
-            border-radius: 12px;
+        /* 命运预测 */
+        .fortune-text {
+            background: #f0fdf4;
+            border: 1px solid #dcfce7;
             padding: 20px;
-            margin-top: 30px;
-        }
-        .weakness-title {
-            color: var(--danger);
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            border-radius: 16px;
+            color: #15803d;
+            font-size: 15px;
+            line-height: 1.7;
         }
 
         .btn-restart {
             width: 100%;
-            padding: 16px;
+            margin-top: 40px;
+            padding: 18px;
             background: var(--text-main);
             color: white;
             border: none;
             border-radius: 16px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 30px;
-            transition: opacity 0.2s;
-        }
-        .btn-restart:hover {
-            opacity: 0.9;
         }
 
-        /* 动画定义 */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+        @keyframes slideUp { from {opacity:0; transform:translateY(40px)} to {opacity:1; transform:translateY(0)} }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="quiz-page">
-        <div class="header">
-            <h1>💰 吸金体质深度检测</h1>
-            <p>基于行为金融学与潜意识财富蓝图</p>
-        </div>
-        
         <div class="progress-box">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill"></div>
-            </div>
-            <div class="progress-num" id="progress-num">1/24</div>
+            <div class="progress-bar"><div class="progress-fill" id="p-fill"></div></div>
+            <div class="progress-text" id="p-text">1/36</div>
         </div>
 
-        <div class="question-card" id="question-text">
-            题目加载中...
+        <div class="question-area">
+            <div class="q-tag" id="q-tag">测试中</div>
+            <div class="q-text" id="q-text">加载中...</div>
         </div>
 
         <div class="options">
-            <button class="option-btn" onclick="submitAnswer(5)">完全符合</button>
-            <button class="option-btn" onclick="submitAnswer(4)">比较符合</button>
-            <button class="option-btn" onclick="submitAnswer(3)">一般/不确定</button>
-            <button class="option-btn" onclick="submitAnswer(2)">不太符合</button>
-            <button class="option-btn" onclick="submitAnswer(1)">完全不符合</button>
+            <button class="btn-opt" onclick="ans(5)">A. 非常符合 (YES)</button>
+            <button class="btn-opt" onclick="ans(4)">B. 比较符合</button>
+            <button class="btn-opt" onclick="ans(3)">C. 一般 / 不确定</button>
+            <button class="btn-opt" onclick="ans(2)">D. 不太符合</button>
+            <button class="btn-opt" onclick="ans(1)">E. 完全不符合 (NO)</button>
         </div>
     </div>
 
     <div id="result-page">
-        <div class="result-badge">
-            <span class="badge-text">你的财富基因原型</span>
-        </div>
-        
-        <div class="result-title-box">
-            <div class="result-archetype" id="final-title">计算中...</div>
-            <div class="result-score">总得分：<strong id="total-score" style="color:var(--primary); font-size:18px;">0</strong> / 120</div>
+        <div class="result-header">
+            <span class="user-tag">你的财富原型</span>
+            <div class="archetype-title" id="res-title">计算中...</div>
+            <div class="score-total">总能量值：<span id="res-score">0</span> / 180</div>
         </div>
 
-        <div class="chart-wrapper">
+        <div class="chart-box">
             <canvas id="radarChart"></canvas>
         </div>
 
-        <div class="analysis-section">
-            <div class="section-title">🧬 财富基因深度扫描</div>
-            <div id="detailed-analysis-box">
-                </div>
-        </div>
+        <div class="mod-title">🧬 六维基因深度扫描</div>
+        <div id="analysis-container"></div>
 
-        <div class="weakness-box">
-            <div class="weakness-title">
-                ⚠️ 财富瓶颈诊断
-            </div>
-            <div class="dim-text" id="weakness-text">
-                </div>
-        </div>
+        <div class="mod-title">💼 你的天命搞钱路子</div>
+        <div style="font-size:14px; color:#666; margin-bottom:12px;">基于你的优势基因推荐：</div>
+        <div class="career-box" id="career-container"></div>
 
-        <button class="btn-restart" onclick="location.reload()">保存结果 / 重新测试</button>
+        <div class="mod-title">🔮 未来5年财富运势</div>
+        <div class="fortune-text" id="fortune-text"></div>
+
+        <button class="btn-restart" onclick="location.reload()">保存结果图 / 重新测试</button>
     </div>
 </div>
 
 <script>
-    // ================= 配置区域 =================
-
-    // 1. 题库配置 (24题，每组6题，打乱顺序显示)
-    // 维度: sense(嗅觉), risk(博弈), action(执行), container(容积)
-    // reverse: true 代表反向计分(选5得1分)
-    const rawQuestions = [
-        // --- 财富嗅觉 Sense ---
-        { id: 1, dim: "sense", text: "看到一家爆火的网红店，我的第一反应是分析它的盈利模式，而不是只想进去消费。", rev: false },
-        { id: 2, dim: "sense", text: "我对数字很不敏感，看到复杂的收益率计算就头疼。", rev: true },
-        { id: 3, dim: "sense", text: "在刷视频或看新闻时，我经常能敏锐地发现某种尚未被满足的市场需求。", rev: false },
-        { id: 4, dim: "sense", text: "我认为赚钱主要靠勤奋工作，所谓的“风口”和“趋势”大多是骗人的。", rev: true },
-        { id: 5, dim: "sense", text: "身边的朋友如果想做副业或投资，经常会来征求我的意见。", rev: false },
-        { id: 6, dim: "sense", text: "我也想赚钱，但我总是搞不清楚现在到底什么行业能赚钱。", rev: true },
-
+    // === 1. 六维题库 (36题) ===
+    // 维度: sense(嗅觉), risk(胆量), action(执行), container(配得感), social(人脉), logic(财商)
+    const questions = [
+        // --- 商业嗅觉 Sense ---
+        {t:"看到一家新开的排队网红店，第一反应是分析它的成本和利润模式。", d:"sense", r:false},
+        {t:"刷短视频时，经常能从别人的吐槽中发现某种未被满足的需求。", d:"sense", r:false},
+        {t:"总觉得赚钱很难，搞不清楚现在到底什么行业有红利。", d:"sense", r:true},
+        {t:"身边的朋友如果有商业上的困惑，经常会来征求我的意见。", d:"sense", r:false},
+        {t:"我认为“风口”都是骗人的，赚钱主要靠老老实实努力。", d:"sense", r:true},
+        {t:"对“信息差”非常敏感，经常能买到比别人便宜很多的东西或服务。", d:"sense", r:false},
+        
         // --- 风险博弈 Risk ---
-        { id: 7, dim: "risk", text: "如果有一笔闲钱，我宁愿存定期，也不愿尝试有本金亏损风险的投资。", rev: true },
-        { id: 8, dim: "risk", text: "为了获得指数级的回报，我愿意忍受长达一两年的“颗粒无收”期。", rev: false },
-        { id: 9, dim: "risk", text: "做重大金钱决策时（如买房、换赛道），我通常感到兴奋多于恐惧。", rev: false },
-        { id: 10, dim: "risk", text: "我非常讨厌不确定性，稳定的工资收入让我最有安全感。", rev: true },
-        { id: 11, dim: "risk", text: "我认为“富贵险中求”是至理名言，不敢下注的人永远没机会。", rev: false },
-        { id: 12, dim: "risk", text: "一旦投资出现亏损，我会整晚睡不着觉，急于把剩下的钱撤出来。", rev: true },
+        {t:"为了获得倍增的回报，我愿意忍受长达一年的“颗粒无收”期。", d:"risk", r:false},
+        {t:"如果有一笔闲钱，我宁愿存定期，也不愿尝试有亏损风险的投资。", d:"risk", r:true},
+        {t:"做重大决策（如跳槽、创业）时，兴奋感多于恐惧感。", d:"risk", r:false},
+        {t:"非常讨厌不确定性，稳定的死工资让我最有安全感。", d:"risk", r:true},
+        {t:"认为“富贵险中求”，不敢下注的人永远没机会跨越阶层。", d:"risk", r:false},
+        {t:"一旦投资出现浮亏，会焦虑得睡不着觉，只想赶紧回本卖出。", d:"risk", r:true},
 
         // --- 变现执行 Action ---
-        { id: 13, dim: "action", text: "我经常有很好的搞钱点子，但最后大多都停留在脑海里，没有实际做出来。", rev: true },
-        { id: 14, dim: "action", text: "如果决定要做一件副业，我会在24小时内迈出第一步（如注册账号、联系人）。", rev: false },
-        { id: 15, dim: "action", text: "遇到不懂的赚钱技能，我会立刻去搜教程学习，而不是等着。", rev: false },
-        { id: 16, dim: "action", text: "我总觉得必须要把所有细节都准备完美了，才能开始实施我的赚钱计划。", rev: true },
-        { id: 17, dim: "action", text: "面对困难，我的口头禅通常是“这事儿怎么办”，而不是“这事儿太难了”。", rev: false },
-        { id: 18, dim: "action", text: "我买了很多付费课程/书籍，但真正看完并照做的不到 20%。", rev: true },
+        {t:"经常有很好的搞钱点子，但最后大多停留在脑子里，没做出来。", d:"action", r:true},
+        {t:"如果决定做副业，会在24小时内完成注册账号、发第一条内容等动作。", d:"action", r:false},
+        {t:"遇到不懂的技能，会立刻搜教程学，而不是等着别人教。", d:"action", r:false},
+        {t:"总觉得必须把所有细节准备完美了，才能开始实施计划。", d:"action", r:true},
+        {t:"口头禅是“这事怎么搞定”，而不是“这事太难了”。", d:"action", r:false},
+        {t:"买了很多课/书，但真正看完并照做的不到20%。", d:"action", r:true},
 
-        // --- 财富容积 Container ---
-        { id: 19, dim: "container", text: "我内心深处隐约觉得，有钱人大多是贪婪的、或者不道德的。", rev: true },
-        { id: 20, dim: "container", text: "如果突然中了一千万彩票，我非常有信心能掌控这笔巨款，而不是几年后挥霍一空。", rev: false },
-        { id: 21, dim: "container", text: "每当我想花钱犒劳自己好的东西时，内心总会有一种“我不配”的负罪感。", rev: true },
-        { id: 22, dim: "container", text: "我非常清楚自己每月的现金流状况，能精确说出每个月的结余是多少。", rev: false },
-        { id: 23, dim: "container", text: "当别人夸我有钱或有能力时，我会大方接受赞美，而不是尴尬地否认。", rev: false },
-        { id: 24, dim: "container", text: "我觉得钱够花就行，太多的财富反而是一种负担和麻烦。", rev: true }
+        // --- 财富配得感 Container ---
+        {t:"潜意识里觉得有钱人大多是贪婪的、势利的或不道德的。", d:"container", r:true},
+        {t:"如果突然中了大奖，我有信心掌控这笔钱，而不是挥霍一空。", d:"container", r:false},
+        {t:"给自己买贵重东西时，内心总有一种隐隐的“我不配”的负罪感。", d:"container", r:true},
+        {t:"当别人夸我有钱或有能力时，我会大方接受，而不是尴尬否认。", d:"container", r:false},
+        {t:"觉得钱够花就行，太多的财富反而是一种负担和麻烦。", d:"container", r:true},
+        {t:"我坚信自己未来一定会非常富有，这只是时间问题。", d:"container", r:false},
+
+        // --- 社交杠杆 Social (新增) ---
+        {t:"我不太擅长麻烦别人，遇到困难宁愿自己死磕也不想欠人情。", d:"social", r:true},
+        {t:"我手机里至少有3个随时能借给我5万块钱的朋友。", d:"social", r:false},
+        {t:"在社交场合，我通常能迅速找到那个最有影响力的人并建立联系。", d:"social", r:false},
+        {t:"我认为“人脉”本质上是利益交换，所以我很排斥刻意社交。", d:"social", r:true},
+        {t:"我愿意花钱请比我厉害的人吃饭，只为听听他们的建议。", d:"social", r:false},
+        {t:"大部分时间我喜欢独处，觉得应酬是浪费生命。", d:"social", r:true},
+
+        // --- 财商逻辑 Logic (新增) ---
+        {t:"我非常清楚自己的资产负债情况，能精确说出每月的结余率。", d:"logic", r:false},
+        {t:"看到复杂的数字图表或收益率计算公式，我就头疼想跳过。", d:"logic", r:true},
+        {t:"我能清晰区分什么是“资产”（把钱放口袋）和“负债”（把钱拿走）。", d:"logic", r:false},
+        {t:"我有记账的习惯，或者至少知道钱主要花哪儿了。", d:"logic", r:false},
+        {t:"我有信用卡分期或网贷的习惯，经常拆东墙补西墙。", d:"logic", r:true},
+        {t:"为了省几块钱配送费，我愿意多花20分钟时间去凑单。", d:"logic", r:true} // 典型的穷人思维(时间廉价)
     ];
 
-    // 2. 深度诊断文案库 (Cold Reading)
-    const analysisDB = {
-        sense: {
-            name: "商业嗅觉",
-            high: "【敏锐】你拥有猎人般的直觉。在大多数人还在抱怨环境不好时，你往往能第一眼看到其中的套利空间。你擅长把信息差转化为现金流，你的大脑就是一台自动运转的商业雷达。",
-            mid: "【平稳】你具备基本的商业常识，能看懂大部分的赚钱逻辑。但你容易被海量信息干扰，偶尔会因为犹豫而错过最佳切入点，需要刻意练习对“关键信号”的捕捉能力。",
-            low: "【迟钝】你可能过度关注“勤奋”而忽略了“选择”。你容易陷入低头拉车的状态，对市场变化不够敏感。警惕：不要用战术上的勤奋掩盖战略上的懒惰。"
-        },
-        risk: {
-            name: "风险博弈",
-            high: "【激进】你是天生的破局者。对于不确定性，你感到的兴奋多于恐惧。这种特质让你极易在动荡环境中抓住暴富机会，但也要警惕因盲目自信而导致的“归零”风险。",
-            mid: "【平衡】你懂得权衡利弊。你愿意为了可预期的收益承担适度风险，但绝不会孤注一掷。这是最利于长跑的心态，虽然爆发力不如激进派，但胜在活得久。",
-            low: "【保守】你的安全感阈值很高，稍微一点亏损的可能都会让你焦虑。这保护了你的本金，但也封锁了你跨越阶层的可能。你的财富增长主要靠“攒”，而非“赚”。"
-        },
-        action: {
-            name: "变现执行",
-            high: "【强悍】你的行动力击败了 99% 的人。当你决定做一件事时，你通常已经跑出了第一步。你是“先开枪后瞄准”的信奉者，这种特质让你能迅速通过试错拿到结果。",
-            mid: "【纠结】你有想法，但往往止步于“准备阶段”。你总想把一切都规划完美再出发，导致很多好点子最后不了了之。记住：完成比完美更重要。",
-            low: "【拖延】你是典型的“思想巨人，行动矮子”。你可能买了很多课、看了很多书，但真正落实到变现动作上的极少。你的知识储备足够了，缺的是那一脚油门。"
-        },
-        container: {
-            name: "财富容积",
-            high: "【开阔】你拥有极佳的“配得感”。你潜意识里坚信自己值得拥有巨大的财富，这让你在面对大额金钱时心态稳健，钱在你手里能留得住、生得出新钱。",
-            mid: "【波动】你渴望财富，但潜意识里似乎对有钱人有一丝偏见（觉得他们贪婪或累）。这种矛盾心理会让你在赚到钱后，不知不觉通过消费或乱投资把钱“漏”出去。",
-            low: "【漏斗】你的潜意识似乎在排斥财富。也许是因为原生家庭的影响，你对金钱有深深的不安全感或罪恶感。如果不修复这个“容器”，赚再多的钱最后都会流走。"
-        }
-    };
-
-    // 3. 总评称号 (基于最高分维度)
+    // === 2. 结果文案配置 ===
     const archetypes = {
-        sense: "🦅 深海巨鲨 (The Shark)",
-        risk: "🦁 荒野赌徒 (The Gambler)",
-        action: "⚡ 闪电执行者 (The Doer)",
-        container: "🏰 财富守门人 (The Keeper)"
+        sense: { t:"🦅 商业狙击手", desc:"你的直觉是上帝给的礼物，总能发现遍地黄金。" },
+        risk: { t:"🦁 荒野征服者", desc:"天生的破局者，混乱和风险是你晋升的阶梯。" },
+        action: { t:"⚡ 闪电实干家", desc:"在你的字典里没有“犹豫”，只有“搞定它”。" },
+        container: { t:"🏰 财富守门人", desc:"你拥有吸引金钱的磁场，且能稳稳守住繁华。" },
+        social: { t:"🤝 资源链接者", desc:"你不需要一个人战斗，整个世界都是你的杠杆。" },
+        logic: { t:"🧠 金融精算师", desc:"极度理性与冷静，财富在你眼中只是数字游戏。" }
     };
 
-    // ================= 逻辑控制 =================
+    const analysisDB = {
+        sense: { n:"商业嗅觉", h:"拥有鹰眼般的洞察力，擅长发现市场空白。", l:"容易陷入盲目勤奋，对趋势缺乏敏感度。" },
+        risk: { n:"风险博弈", h:"敢于在不确定性中下注，具备富人野心。", l:"安于现状，过度追求安全感导致错失良机。" },
+        action: { n:"变现执行", h:"超强行动力，是离钱最近的实干派。", l:"想得多做得少，典型的“知识瘫痪”患者。" },
+        container: { n:"财富配得感", h:"内心富足，金钱流向你时毫无阻碍。", l:"潜意识排斥金钱，容易“留不住财”。" },
+        social: { n:"社交杠杆", h:"擅长借力，懂得用别人的资源办自己的事。", l:"单打独斗，不善于利用人脉放大价值。" },
+        logic: { n:"财商逻辑", h:"对数字敏感，理财思路清晰，不易被割韭菜。", l:"缺乏成本概念，容易凭感觉消费和投资。" }
+    };
 
-    let questions = [];
-    let currentIdx = 0;
-    let scores = { sense: 0, risk: 0, action: 0, container: 0 };
-    
-    // 洗牌算法
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+    // 针对最高分维度的职业推荐
+    const careersDB = {
+        sense: ["短视频操盘手", "电商选品师", "趋势投资人", "商业咨询顾问"],
+        risk: ["创业者", "全职交易员", "早期风投", "销售总监"],
+        action: ["地推团队长", "项目经理", "直播带货主播", "网约车/外卖站长"],
+        container: ["资产管理", "信托经理", "心理咨询师", "高端管家"],
+        social: ["保险经纪人", "高端猎头", "社群主理人", "公关/BD总监"],
+        logic: ["财务总监", "数据分析师", "精算师", "量化交易员"]
+    };
+
+    // 逻辑控制
+    let idx = 0;
+    let scores = { sense:0, risk:0, action:0, container:0, social:0, logic:0 };
+    // 洗牌
+    questions.sort(()=>Math.random()-0.5);
 
     function init() {
-        questions = shuffleArray([...rawQuestions]);
-        renderQuestion();
+        render();
     }
 
-    function renderQuestion() {
-        // 更新进度
-        document.getElementById('progress-num').innerText = `${currentIdx + 1} / ${questions.length}`;
-        const pct = ((currentIdx) / questions.length) * 100;
-        document.getElementById('progress-fill').style.width = `${pct}%`;
-
-        // 更新题目文本 (添加淡入效果)
-        const qText = document.getElementById('question-text');
-        qText.style.opacity = 0;
-        setTimeout(() => {
-            qText.innerText = questions[currentIdx].text;
-            qText.style.opacity = 1;
+    function render() {
+        document.getElementById('p-text').innerText = `${idx+1} / ${questions.length}`;
+        document.getElementById('p-fill').style.width = `${((idx)/questions.length)*100}%`;
+        
+        const q = questions[idx];
+        document.getElementById('q-tag').innerText = "Q" + (idx+1);
+        
+        const qt = document.getElementById('q-text');
+        qt.style.opacity = 0;
+        setTimeout(()=>{
+            qt.innerText = q.t;
+            qt.style.opacity = 1;
         }, 150);
     }
 
-    function submitAnswer(val) {
-        const q = questions[currentIdx];
-        let score = val;
-        // 处理反向计分
-        if (q.rev) {
-            score = 6 - val;
-        }
-        scores[q.dim] += score;
-
-        currentIdx++;
-        if (currentIdx < questions.length) {
-            renderQuestion();
-        } else {
-            generateReport();
-        }
+    function ans(val) {
+        const q = questions[idx];
+        let s = q.r ? (6-val) : val;
+        scores[q.d] += s;
+        
+        idx++;
+        if(idx < questions.length) render();
+        else showRes();
     }
 
-    function generateReport() {
-        // 切换页面
+    function showRes() {
         document.getElementById('quiz-page').style.display = 'none';
         document.getElementById('result-page').style.display = 'block';
 
-        // 1. 寻找最高分和最低分
-        let maxScore = -1;
-        let maxDim = 'sense';
-        let minScore = 100;
-        let minDim = 'sense';
-        let totalScore = 0;
-
-        const dimKeys = ['sense', 'risk', 'action', 'container'];
-        dimKeys.forEach(key => {
-            const s = scores[key];
-            totalScore += s;
-            if (s > maxScore) { maxScore = s; maxDim = key; }
-            if (s < minScore) { minScore = s; minDim = key; }
+        // 1. 计算
+        let maxS = -1, maxD = 'sense';
+        let total = 0;
+        const dims = Object.keys(scores);
+        
+        dims.forEach(d => {
+            total += scores[d];
+            if(scores[d] > maxS) { maxS = scores[d]; maxD = d; }
         });
 
-        // 2. 填充基础信息
-        document.getElementById('total-score').innerText = totalScore;
-        document.getElementById('final-title').innerText = archetypes[maxDim];
+        // 2. 基础信息
+        document.getElementById('res-score').innerText = total;
+        document.getElementById('res-title').innerText = archetypes[maxD].t;
 
-        // 3. 生成深度分析卡片
-        const analysisBox = document.getElementById('detailed-analysis-box');
-        analysisBox.innerHTML = ""; // 清空
-
-        dimKeys.forEach(dim => {
-            const s = scores[dim];
-            const meta = analysisDB[dim];
+        // 3. 详细分析生成
+        const anaBox = document.getElementById('analysis-container');
+        dims.forEach(d => {
+            const s = scores[d];
+            const meta = analysisDB[d];
+            // 满分30分。 >=24高，<=15低
+            let status = s>=24 ? "优势" : (s<=15 ? "短板" : "常态");
+            let color = s>=24 ? "#16a34a" : (s<=15 ? "#dc2626" : "#ca8a04");
+            let desc = s>=22 ? meta.h : (s<=15 ? meta.l : "表现中规中矩，若能突破此项，财富将上一个台阶。");
             
-            let status = "";
-            let colorVar = "";
-            let text = "";
-
-            // 判分逻辑：满分30
-            // >= 24 (80%) -> 优势
-            // <= 15 (50%) -> 短板
-            if (s >= 24) {
-                status = "核心优势";
-                colorVar = "var(--success)";
-                text = meta.high;
-            } else if (s <= 15) {
-                status = "潜在短板";
-                colorVar = "var(--danger)";
-                text = meta.low;
-            } else {
-                status = "表现平稳";
-                colorVar = "var(--warning)";
-                text = meta.mid;
-            }
-
-            // 插入HTML
-            analysisBox.innerHTML += `
-                <div class="dimension-card">
-                    <div class="dim-header">
-                        <span class="dim-name">${meta.name}</span>
-                        <span class="dim-tag" style="background:${colorVar}">${status}</span>
+            anaBox.innerHTML += `
+                <div class="analysis-card">
+                    <div class="card-head">
+                        <span style="color:${color}">● ${meta.n}</span>
+                        <span style="background:${color}; color:#fff; font-size:12px; padding:2px 8px; border-radius:4px;">${status}</span>
                     </div>
-                    <div class="dim-text">${text}</div>
+                    <div class="card-body">${desc}</div>
                 </div>
             `;
         });
 
-        // 4. 填充弱点建议
-        const weakName = analysisDB[minDim].name;
-        document.getElementById('weakness-text').innerHTML = `
-            经过全维度扫描，系统检测到 <strong>${weakName}</strong> 是制约你财富爆发的最大瓶颈（得分仅 ${scores[minDim]} 分）。<br><br>
-            根据木桶效应，你的财富容量不取决于你最强的长板，而取决于这块最短的板。建议近期停止寻找新项目，专门针对${weakName}进行专项提升。
-        `;
+        // 4. 职业推荐
+        const cBox = document.getElementById('career-container');
+        const jobs = careersDB[maxD];
+        jobs.forEach(j => {
+            cBox.innerHTML += `<div class="career-tag">${j}</div>`;
+        });
+        // 补几个通用的
+        if(total > 150) cBox.innerHTML += `<div class="career-tag">天使投资人</div>`;
 
-        // 5. 绘制雷达图
-        drawRadarChart(scores);
+        // 5. 运势预测
+        const fBox = document.getElementById('fortune-text');
+        if(total > 140) {
+            fBox.innerHTML = "你的财富能量目前处于<b>「爆发前夜」</b>。未来3-5年，只要你在“短板”维度稍作修补，极有可能遇到一个改变阶层的机会。重点关注每年的9月和10月，那是你财运最旺的时刻。";
+        } else if(total > 110) {
+            fBox.innerHTML = "你的财富曲线呈现<b>「螺旋上升」</b>态势。虽然不会一夜暴富，但胜在稳健。未来5年你的资产将通过复利稳步增长。建议减少无效社交，专注核心技能的打磨，35岁后将迎来大运。";
+        } else {
+            fBox.innerHTML = "你目前正处于<b>「能量蓄积期」</b>。虽然现状可能让你感到有些卡顿，但这正是扎根的好时候。未来2年不要盲目投资，守住本金，多考证、多学技能。只要修补好“变现执行”这一环，逆袭指日可待。";
+        }
+
+        // 6. 绘图
+        drawChart(dims, scores);
     }
 
-    function drawRadarChart(scores) {
+    function drawChart(labels, dataObj) {
         const ctx = document.getElementById('radarChart').getContext('2d');
+        // 中文标签映射
+        const cnMap = {sense:"商业嗅觉", risk:"风险博弈", action:"变现执行", container:"配得感", social:"社交杠杆", logic:"财商逻辑"};
+        const displayLabels = labels.map(k => cnMap[k]);
+        const dataArr = labels.map(k => dataObj[k]);
+
         new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['商业嗅觉', '风险博弈', '变现执行', '财富容积'],
+                labels: displayLabels,
                 datasets: [{
                     label: '能力值',
-                    data: [scores.sense, scores.risk, scores.action, scores.container],
-                    backgroundColor: 'rgba(98, 0, 234, 0.2)',
-                    borderColor: '#6200ea',
-                    borderWidth: 2,
+                    data: dataArr,
+                    backgroundColor: 'rgba(139, 92, 246, 0.25)',
+                    borderColor: '#7c3aed',
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#6200ea',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#6200ea'
+                    pointBorderColor: '#7c3aed',
+                    borderWidth: 2
                 }]
             },
             options: {
                 scales: {
                     r: {
                         beginAtZero: true,
-                        max: 30, // 满分30
-                        ticks: { display: false }, // 隐藏刻度数字
-                        pointLabels: {
-                            font: { size: 14, weight: 'bold' },
-                            color: '#333'
-                        },
-                        grid: {
-                            color: '#e5e7eb'
-                        },
-                        angleLines: {
-                            color: '#e5e7eb'
-                        }
+                        max: 30,
+                        ticks: { display: false },
+                        pointLabels: { font: {size:12, weight:'bold'}, color:'#334155' }
                     }
                 },
-                plugins: {
-                    legend: { display: false }
-                },
-                maintainAspectRatio: false
+                plugins: { legend: {display:false} }
             }
         });
     }
 
     // 启动
     init();
-
 </script>
 </body>
 </html>
